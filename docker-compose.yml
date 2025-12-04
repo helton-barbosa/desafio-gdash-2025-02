@@ -52,6 +52,21 @@ services:
     networks:
       - gdash-network
 
+  # ----------------------------------------
+  # Serviço 2: Worker Consumidor (Go)
+  # ----------------------------------------
+  queue-worker:
+    build: ./queue-worker
+    container_name: gdash_worker
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/
+      API_URL: http://core-api:3000/api/weather/logs
+    networks:
+      - gdash-network
+
 volumes:
   mongo_data:
   rabbitmq_data:
