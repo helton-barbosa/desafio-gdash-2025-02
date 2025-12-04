@@ -36,6 +36,22 @@ services:
     networks:
       - gdash-network
 
+  # ----------------------------------------
+  # Serviço 1: Coletor Python
+  # ----------------------------------------
+  weather-collector:
+    build: ./weather-collector
+    container_name: gdash_collector
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    networks:
+      - gdash-network
+
 volumes:
   mongo_data:
   rabbitmq_data:
