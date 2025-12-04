@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------
+  # Banco de Dados: MongoDB
+  # ----------------------------------------
+  mongodb:
+    image: mongo:6.0
+    container_name: gdash_mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - gdash-network
+
+  # ----------------------------------------
+  # Message Broker: RabbitMQ
+  # ----------------------------------------
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: gdash_rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "${RABBITMQ_PORT}:5672"   # Porta para comunicação
+      - "15672:15672"             # Painel de gestão
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - gdash-network
+
+volumes:
+  mongo_data:
+  rabbitmq_data:
+
+networks:
+  gdash-network:
+    driver: bridge
