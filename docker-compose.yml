@@ -67,6 +67,22 @@ services:
     networks:
       - gdash-network
 
+  # ----------------------------------------
+  # Serviço 3: Core API (NestJS)
+  # ----------------------------------------
+  core-api:
+    build: ./core-api
+    container_name: gdash_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: ${MONGO_URI}
+    depends_on:
+      - mongodb
+    networks:
+      - gdash-network
+
 volumes:
   mongo_data:
   rabbitmq_data:
