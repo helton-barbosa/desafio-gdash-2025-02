@@ -99,7 +99,7 @@ Se você tiver o `make` instalado (Linux/WSL), pode usar os atalhos:
 
 ## 📹 Vídeo Demonstrativo
 
-[Link para o vídeo no YouTube](COLOQUE_SEU_LINK_AQUI)
+[Link para o vídeo no YouTube](https://youtu.be/NABLerrzVDQ)
 
 ---
 Desenvolvido por **Helton Barbosa Santos Ferreira**
