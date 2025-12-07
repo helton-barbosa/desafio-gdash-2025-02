@@ -1,8 +1,9 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './users.schema';
 import * as bcrypt from 'bcrypt';
+import { User, UserDocument } from './users.schema';
+import { CreateUserDto } from './users.dto';
 
 @Injectable()
 export class UsersService implements OnModuleInit {
@@ -11,7 +12,6 @@ export class UsersService implements OnModuleInit {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async onModuleInit() {
-    // Cria usuário padrão ao iniciar
     const adminEmail = 'admin@example.com';
     const exists = await this.userModel.findOne({ email: adminEmail });
 
@@ -30,12 +30,12 @@ export class UsersService implements OnModuleInit {
     return this.userModel.findOne({ email });
   }
 
-  async create(user: any): Promise<User> {
+  async create(user: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     return this.userModel.create({ ...user, password: hashedPassword });
   }
 
   async findAll() {
-      return this.userModel.find().select('-password'); // Retorna sem a senha
+    return this.userModel.find().select('-password');
   }
 }

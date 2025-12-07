@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # ----------------------------------------
-  # Banco de Dados: MongoDB
+  # Infra: Banco de Dados (MongoDB)
   # ----------------------------------------
   mongodb:
     image: mongo:6.0
@@ -17,9 +17,14 @@ services:
       - mongo_data:/data/db
     networks:
       - gdash-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   # ----------------------------------------
-  # Message Broker: RabbitMQ
+  # Infra: Fila (RabbitMQ)
   # ----------------------------------------
   rabbitmq:
     image: rabbitmq:3-management
@@ -29,22 +34,28 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     ports:
-      - "${RABBITMQ_PORT}:5672"   # Porta para comunicação
+      - "${RABBITMQ_PORT}:5672"   # Porta de serviço
       - "15672:15672"             # Painel de gestão
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - gdash-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
 
   # ----------------------------------------
-  # Serviço 1: Coletor Python
+  # App: Coletor de Clima (Python)
   # ----------------------------------------
   weather-collector:
     build: ./weather-collector
     container_name: gdash_collector
     restart: always
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -53,14 +64,15 @@ services:
       - gdash-network
 
   # ----------------------------------------
-  # Serviço 2: Worker Consumidor (Go)
+  # App: Processador de Fila (Go Worker)
   # ----------------------------------------
   queue-worker:
     build: ./queue-worker
     container_name: gdash_worker
     restart: always
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     environment:
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq:5672/
       API_URL: http://core-api:3000/api/weather/logs
@@ -68,7 +80,7 @@ services:
       - gdash-network
 
   # ----------------------------------------
-  # Serviço 3: Core API (NestJS)
+  # App: API Principal (NestJS)
   # ----------------------------------------
   core-api:
     build: ./core-api
@@ -78,8 +90,24 @@ services:
       - "3000:3000"
     environment:
       MONGO_URI: ${MONGO_URI}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
+    networks:
+      - gdash-network
+
+  # ----------------------------------------
+  # App: Frontend (React + Vite)
+  # ----------------------------------------
+  web-dashboard:
+    build: ./web-dashboard
+    container_name: gdash_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - core-api
     networks:
       - gdash-network
 

@@ -1,0 +1,62 @@
+name: GDASH CI
+
+on:
+  push:
+    branches: [ "main", "master", "helton*" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: Install Dependencies (API)
+      working-directory: ./core-api
+      run: npm ci
+      
+    - name: Run Tests (API)
+      working-directory: ./core-api
+      run: npm test
+      
+    - name: Build (API)
+      working-directory: ./core-api
+      run: npm run build
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        
+    - name: Install Dependencies (Web)
+      working-directory: ./web-dashboard
+      run: npm ci
+      
+    - name: Build (Web)
+      working-directory: ./web-dashboard
+      run: npm run build
+
+  build-go-worker:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+        
+    - name: Build Worker
+      working-directory: ./queue-worker
+      run: go build -v ./...

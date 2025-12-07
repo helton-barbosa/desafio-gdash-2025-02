@@ -6,7 +6,12 @@ import { WeatherLog, WeatherLogSchema } from './weather.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: WeatherLog.name, schema: WeatherLogSchema }]),
+    MongooseModule.forFeature([
+      {
+        name: WeatherLog.name,
+        schema: WeatherLogSchema,
+      },
+    ]),
   ],
   controllers: [WeatherController],
   providers: [WeatherService],
