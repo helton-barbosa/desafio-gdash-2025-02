@@ -103,4 +103,3 @@ Se você tiver o `make` instalado (Linux/WSL), pode usar os atalhos:
 
 ---
 Desenvolvido por **Helton Barbosa Santos Ferreira**
-```
